@@ -84,7 +84,6 @@ class SineOutputChan : public OutputChan
 };
 
 #endif
-=======
 
 
 

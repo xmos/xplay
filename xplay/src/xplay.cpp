@@ -85,6 +85,8 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
 
 int XPlay::run(unsigned delay)
 {
+    int useWDM = 0;
+
 	PaError err;
   	err = Pa_Initialize();
   	if( err != paNoError ) 
