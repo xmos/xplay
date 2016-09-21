@@ -1,4 +1,6 @@
 
+#ifndef __XPLAY_H__
+#define __XPLAY_H__
 
 #include <sndfile.h>
 #include <thread>
@@ -26,12 +28,6 @@ class InputChan
 };
 
 
-class SampleTransform {
- public:
-  virtual int transform(int) = 0;
-};
-
-
 class XPlay 
 {
 	public:
@@ -41,7 +37,7 @@ class XPlay
   		unsigned GetSampleRate();
         unsigned GetNumChansOut();
         unsigned GetNumChansIn();
-  		OutputChan* outChans; // Should be private
+  		OutputChan* outChans;   // TODO Should be private
   		InputChan* inChans;
 
 	private:
@@ -49,8 +45,8 @@ class XPlay
   		unsigned numIn;
   		unsigned numOut;
         unsigned playmode;
-  		//bool loopback;
-  		//bool useWDM;
+  		//bool loopback;        //TODO future option
+  		//bool useWDM;          //TODO future option
 };
 
 
@@ -87,7 +83,7 @@ class SineOutputChan : public OutputChan
         int *table;
 };
 
-
+#endif
 
 
 
