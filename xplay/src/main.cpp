@@ -117,13 +117,11 @@ int main(int argc, char *argv[])
     /* TODO we might want multple output modes for different channels, current file play is only one */
     if(playmode == PLAYMODE_TONE)
     {
-        oc = new SineOutputChan(sampleRate, toneFreq);
+        //oc = new SineOutputChan(sampleRate, toneFreq);
     }
     else if(playmode == PLAYMODE_FILE)
     {
-        printf("playfile\n");
-        oc = new FileOutputChan((char*) filename);
-        printf("OK");
+        //oc = new FileOutputChan((char*) filename);
     }
     else
     {
