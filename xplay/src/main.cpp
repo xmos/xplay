@@ -2,7 +2,7 @@
 #include <thread>
 #include <vector>
 #include "optionparser.h"
-//#include "xplay.h"
+#include "xplay.h"
 
 struct Arg: public option::Arg
 {
@@ -117,13 +117,11 @@ int main(int argc, char *argv[])
     /* TODO we might want multple output modes, current file play is only one */
     if(playmode == PLAYMODE_TONE)
     {
-        oc = new SineOutputChan(sampleRate, toneFreq);
+        //oc = new SineOutputChan(sampleRate, toneFreq);
     }
     else if(playmode == PLAYMODE_FILE)
     {
-        printf("playfile\n");
-        oc = new FileOutputChan((char*) filename);
-        printf("OK");
+        //oc = new FileOutputChan((char*) filename);
     }
     else
     {
@@ -133,5 +131,5 @@ int main(int argc, char *argv[])
     //XPlay xplay(sampleRate, oc);
 
     int duration = 100000;  
-    return xplay.run(duration);
+    //return xplay.run(duration);
 }
