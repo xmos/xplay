@@ -2,7 +2,7 @@
 #include <thread>
 #include <vector>
 #include "optionparser.h"
-//#include "xplay.h"
+#include "xplay.h"
 
 struct Arg: public option::Arg
 {
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
         filename = options[PLAYFILE].arg;
     }
        
-    /* TODO we might want multple output modes, current file play is only one */
+    /* TODO we might want multple output modes for different channels, current file play is only one */
     if(playmode == PLAYMODE_TONE)
     {
         oc = new SineOutputChan(sampleRate, toneFreq);
@@ -130,8 +130,9 @@ int main(int argc, char *argv[])
     
     }    
 
-    //XPlay xplay(sampleRate, oc);
+    XPlay xplay(sampleRate, oc);
 
-    int duration = 100000;  
+    /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
+    int duration = 0;  
     return xplay.run(duration);
 }
