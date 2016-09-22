@@ -50,7 +50,7 @@ struct Arg: public option::Arg
 };
 
 
-enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE};
+enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE};
 
 const option::Descriptor usage[] =
 {
@@ -58,6 +58,7 @@ const option::Descriptor usage[] =
                                         "Options:" },
  {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit." },
  {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -o  \tPlay File." },
+ {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -o  \tRecord File." },
  {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  -r <arg>, \t--required=<arg>  \tMust have an argument."  },
  {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  -r <arg>, \t--required=<arg>  \tMust have an argument."  },
  {UNKNOWN, 0, "", "",option::Arg::None, "\nExamples:\n"
@@ -94,8 +95,11 @@ int main(int argc, char *argv[])
     unsigned numChansIn = 2;            /* TODO, options */
     unsigned toneFreq = 0;              /* Freq of output tone */
     playmode_t playmode = PLAYMODE_SILENCE;
+    recmode_t recmode = RECMODE_NONE;
     OutputChan *oc;
+    InputChan *ic;
     const char * filename;
+    const char * filename_rec;
 
     if(options[SAMPLERATE])
     {
@@ -113,22 +117,39 @@ int main(int argc, char *argv[])
         playmode = PLAYMODE_FILE;
         filename = options[PLAYFILE].arg;
     }
-       
-    /* TODO we might want multple output modes for different channels, current file play is only one */
-    if(playmode == PLAYMODE_TONE)
-    {
-        //oc = new SineOutputChan(sampleRate, toneFreq);
-    }
-    else if(playmode == PLAYMODE_FILE)
-    {
-        //oc = new FileOutputChan((char*) filename);
-    }
-    else
-    {
     
-    }    
+    if(options[RECFILE])
+    {
+        recmode = RECMODE_FILE;
+        filename_rec = options[RECFILE].arg;
+    }
+   
+    /* TODO we might want multple output modes for different channels, current file play is only one */
+    switch(playmode)
+    {
+        case PLAYMODE_TONE:
+            oc = new SineOutputChan(sampleRate, toneFreq);
+            break;
+        
+        case PLAYMODE_FILE:
+            oc = new FileOutputChan((char*) filename);
+            break;
+        
+        default:
+            break;
+    }
 
-    XPlay xplay(sampleRate, oc);
+    switch(recmode)
+    {
+        case RECMODE_FILE:
+            ic = new FileInputChan((char*) filename_rec);
+            break;
+        default:
+            break;
+    }
+ 
+
+    XPlay xplay(sampleRate, oc /*, ic */);
 
     /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
     int duration = 0;  

@@ -18,15 +18,15 @@ unsigned XPlay::GetSampleRate()
 	return this->sampleRate;
 }
 
-unsigned XPlay::GetNumChansOut()
-{
-	return this->numOut;
-}
+//unsigned XPlay::GetNumChansOut()
+//{
+//	return this->numOut;
+//}
 
-unsigned XPlay::GetNumChansIn()
-{
-	return this->numIn;
-}
+//unsigned XPlay::GetNumChansIn()
+//{
+//	return this->numIn;
+//}
 
 static int xplayCallback( const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,
@@ -342,6 +342,29 @@ int SineOutputChan::getNextSample(void)
   
     return sample;
 }
+
+
+/* FileInputChan */
+
+FileInputChan::FileInputChan(char *filename) : InputChan() 
+{
+   // fileBuffer = new FileBuffer(OUT_BLOCK_SIZE, filename);
+    //fileThread = new std::thread(FileReader, std::ref(*this->fileBuffer) /* sampleRate, freq, chanId*/);
+
+    /* Note, this will wait until FileReader thread is ready to go.. */
+    //buf = fileBuffer->getInitialReadBuffer();
+
+    this->bufSize = OUT_BLOCK_SIZE;
+    //this->count= 0;
+    
+}
+
+FileInputChan::~FileInputChan()
+{
+}
+
+
+
 
 XPlay::XPlay(unsigned sampleRate, OutputChan *oc)
 {

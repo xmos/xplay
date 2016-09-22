@@ -10,12 +10,17 @@
 
 typedef enum playmode{PLAYMODE_TONE, PLAYMODE_FILE, PLAYMODE_SILENCE} playmode_t;
 
+typedef enum recmode{RECMODE_NONE, RECMODE_FILE, RECMODE_SILENCE} recmode_t;
+
 class OutputChan
 {
     public:
         OutputChan();
         virtual ~OutputChan() {};
         virtual int getNextSample(void) = 0;
+
+    private:
+        unsigned chanCount;
 };
 
 
@@ -25,6 +30,9 @@ class InputChan
         InputChan();
         virtual ~InputChan() {};
         virtual void consumeSample(int sample) = 0;
+    
+    private:
+        unsigned chanCount;
 };
 
 
@@ -42,8 +50,8 @@ class XPlay
 
 	private:
   		unsigned sampleRate;
-  		unsigned numIn;
-  		unsigned numOut;
+  		//unsigned numIn;
+  		//unsigned numOut;
         unsigned playmode;
   		//bool loopback;        //TODO future option
   		//bool useWDM;          //TODO future option
@@ -82,6 +90,25 @@ class SineOutputChan : public OutputChan
         int initialDelayCount;
         int *table;
 };
+
+
+/* InChans */
+
+class FileInputChan : public InputChan 
+{
+    public:
+        FileInputChan(char * filename);
+        ~FileInputChan();
+        void consumeSample(int sample);
+
+    private:
+        FileBuffer *fileBuffer;
+        std::thread *fileThread;
+        unsigned count;
+        unsigned bufSize;
+        int *buf;
+};
+
 
 #endif
 
