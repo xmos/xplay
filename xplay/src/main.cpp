@@ -84,10 +84,19 @@ int main(int argc, char *argv[])
     }
 
     for (option::Option* opt = options[UNKNOWN]; opt; opt = opt->next())
+    {    
         std::cout << "Unknown option: " << std::string(opt->name,opt->namelen) << "\n";
+    }
 
     for (int i = 0; i < parse.nonOptionsCount(); ++i)
+    {
         std::cout << "Non-option #" << i << ": " << parse.nonOption(i) << "\n";
+    }
+
+    if(parse.nonOptionsCount() || options[UNKNOWN])
+    {
+        exit(1);
+    }
 
     unsigned sampleRate= 44100;         /* Default freq */
     unsigned numChansOut = 2;           /* TODO, options */
@@ -131,6 +140,6 @@ int main(int argc, char *argv[])
     XPlay xplay(sampleRate, oc);
 
     /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
-    int duration = 1000000;  
+    int duration = 100000;  
     return xplay.run(duration);
 }
