@@ -117,11 +117,11 @@ int main(int argc, char *argv[])
     /* TODO we might want multple output modes for different channels, current file play is only one */
     if(playmode == PLAYMODE_TONE)
     {
-        //oc = new SineOutputChan(sampleRate, toneFreq);
+        oc = new SineOutputChan(sampleRate, toneFreq);
     }
     else if(playmode == PLAYMODE_FILE)
     {
-        //oc = new FileOutputChan((char*) filename);
+        oc = new FileOutputChan((char*) filename);
     }
     else
     {
@@ -131,6 +131,6 @@ int main(int argc, char *argv[])
     XPlay xplay(sampleRate, oc);
 
     /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
-    int duration = 0;  
+    int duration = 1000000;  
     return xplay.run(duration);
 }

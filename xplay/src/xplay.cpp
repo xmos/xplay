@@ -7,7 +7,10 @@
 #include "logging.h"
 
 #include "portaudio.h"
+
+#if OS_DARWIN 
 #include "pa_mac_core.h"
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
