@@ -26,6 +26,11 @@ ifeq ($(PLATFORM),DARWIN)
 EXTRA_CFLAGS = -stdlib=libc++ -DOS_DARWIN=1
 endif
 
+portaudio:
+	cd ../../portaudio; ./configure --prefix=$(abspath ../../xplay/xplay/libs/portaudio) $(PORTAUDIO_CONFIG_FLAGS)
+	cd ../../portaudio; make
+	cd ../../portaudio; make install
+
 libsndfile:
 	cd ../../libsndfile; ./configure --prefix=$(abspath ../../xplay/xplay/libs/libsndfile)
 	cd ../../libsndfile; make
