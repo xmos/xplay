@@ -20,7 +20,6 @@ ifeq ($(PLATFORM),WINDOWS)
 PORTAUDIO_CONFIG_FLAGS = --with-winapi=asio,wmme --with-asiodir=$(abspath ../../asiosdk)
 EXTRA_LIBS = -lwinmm -lole32
 EXTRA_CFLAGS = -static -static-libgcc
-FFTW_PREMAKE = cp config.h.win config.h;
 endif
 
 ifeq ($(PLATFORM),DARWIN)

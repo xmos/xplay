@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     playmode_t playmode = PLAYMODE_SILENCE;
     recmode_t recmode = RECMODE_NONE;
     OutputChan *oc;
-    InputChan *ic;
+    //InputChan *ic;
     const char * filename;
     const char * filename_rec;
 
@@ -128,11 +128,11 @@ int main(int argc, char *argv[])
     switch(playmode)
     {
         case PLAYMODE_TONE:
-            oc = new SineOutputChan(sampleRate, toneFreq);
+            oc = new SineOutputChan(sampleRate, toneFreq, numChansOut);
             break;
         
         case PLAYMODE_FILE:
-            oc = new FileOutputChan((char*) filename);
+            oc = new FileOutputChan((char*) filename, numChansOut);
             break;
         
         default:
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     switch(recmode)
     {
         case RECMODE_FILE:
-            ic = new FileInputChan((char*) filename_rec);
+        //    ic = new FileInputChan((char*) filename_rec, numChansIn);
             break;
         default:
             break;

@@ -7,34 +7,14 @@
 #include <mutex>
 #include <condition_variable>
 #include "file.h"
+#include "inputchan.h"
+#include "outputchan.h"
+
+#define OUT_BLOCK_SIZE (1024*8)
 
 typedef enum playmode{PLAYMODE_TONE, PLAYMODE_FILE, PLAYMODE_SILENCE} playmode_t;
 
 typedef enum recmode{RECMODE_NONE, RECMODE_FILE, RECMODE_SILENCE} recmode_t;
-
-class OutputChan
-{
-    public:
-        OutputChan();
-        virtual ~OutputChan() {};
-        virtual int getNextSample(void) = 0;
-
-    private:
-        unsigned chanCount;
-};
-
-
-class InputChan 
-{
-    public:
-        InputChan();
-        virtual ~InputChan() {};
-        virtual void consumeSample(int sample) = 0;
-    
-    private:
-        unsigned chanCount;
-};
-
 
 class XPlay 
 {
@@ -43,72 +23,19 @@ class XPlay
   		~XPlay();
   		int run(unsigned delay_ms);
   		unsigned GetSampleRate();
-        unsigned GetNumChansOut();
-        unsigned GetNumChansIn();
+        unsigned GetNumChansOut(){return devChanCountOut;};
+        unsigned GetNumChansIn(){return devChanCountIn;};
   		OutputChan* outChans;   // TODO Should be private
   		InputChan* inChans;
 
 	private:
   		unsigned sampleRate;
-  		//unsigned numIn;
-  		//unsigned numOut;
+  		unsigned devChanCountIn;
+  		unsigned devChanCountOut;
         unsigned playmode;
   		//bool loopback;        //TODO future option
   		//bool useWDM;          //TODO future option
 };
-
-
-/* OutChans */
-
-class FileOutputChan : public OutputChan 
-{
-    public:
-        FileOutputChan(char * filename);
-        ~FileOutputChan();
-        int getNextSample(void);
-
-    private:
-        FileBuffer *fileBuffer;
-        std::thread *fileThread;
-        unsigned count;
-        unsigned bufSize;
-        int *buf;
- 
-            
-};
-
-class SineOutputChan : public OutputChan 
-{
-    public:
-        SineOutputChan(unsigned sampleRate, unsigned freq);
-        int getNextSample(void);
-    private:
-        unsigned sampleRate;
-        unsigned freq;
-        int count;
-        int period;
-        int initialDelayCount;
-        int *table;
-};
-
-
-/* InChans */
-
-class FileInputChan : public InputChan 
-{
-    public:
-        FileInputChan(char * filename);
-        ~FileInputChan();
-        void consumeSample(int sample);
-
-    private:
-        FileBuffer *fileBuffer;
-        std::thread *fileThread;
-        unsigned count;
-        unsigned bufSize;
-        int *buf;
-};
-
 
 #endif
 

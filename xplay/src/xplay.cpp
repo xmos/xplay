@@ -3,15 +3,10 @@
 #include "logging.h"
 #include "string.h"
 #include "stdio.h"
-#include "math.h"
 #include "logging.h"
 
 #include "portaudio.h"
 #include "pa_mac_core.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 unsigned XPlay::GetSampleRate()
 {
@@ -58,7 +53,7 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
   
     for(int i = 0; i < framesPerBuffer; i++)
     {
-        for (int j = 0; j < xplay->GetNumChansOut(); j++) 
+        for (int j = 0; j < xplay->outChans->getChanCount(); j++) 
         {
             int sample = xplay->outChans->getNextSample();
             *out++ = sample;
@@ -113,8 +108,8 @@ int XPlay::run(unsigned delay)
 		{
 			char wdmIn[] = "Line (XMOS";
 			char wdmOut[] = "Speakers (XMOS";
-			char *cmp = numIn > 0 ? wdmIn : wdmOut;
-			if (strstr(name, cmp) != NULL) 
+			char *cmp = devChanCountIn == 0 ? wdmIn : wdmOut; 
+            if (strstr(name, cmp) != NULL) 
 			{
 				log("Using Device %d: %s\n", i, name);
 				device = i;
@@ -144,7 +139,7 @@ int XPlay::run(unsigned delay)
 	memset(&inputParameters, 0, sizeof(inputParameters));
 	memset(&outputParameters, 0, sizeof(outputParameters));
 
-	inputParameters.channelCount = numIn;
+	inputParameters.channelCount = devChanCountIn; // Should this be the chan count of device or file? 
 	inputParameters.device = device;
 	inputParameters.sampleFormat = paInt32;
 	inputParameters.suggestedLatency = 
@@ -155,7 +150,7 @@ int XPlay::run(unsigned delay)
 	//PaMacCore_SetupStreamInfo(&hostInfoIn, paMacCoreChangeDeviceParameters|paMacCoreFailIfConversionRequired);
 	//inputParameters.hostApiSpecificStreamInfo = &hostInfoIn; 
 #endif
-	outputParameters.channelCount = numOut;
+	outputParameters.channelCount = devChanCountOut;
 	outputParameters.device = device;
 	outputParameters.sampleFormat = paInt32;
 	outputParameters.suggestedLatency = 
@@ -168,8 +163,8 @@ int XPlay::run(unsigned delay)
 
    /* Open an audio I/O stream. */
    err = Pa_OpenStream( &stream,
-                       numIn != 0 ? &inputParameters : NULL,
-                       numOut != 0 ? &outputParameters : NULL,
+                       devChanCountIn != 0 ? &inputParameters : NULL,
+                       devChanCountOut != 0 ? &outputParameters : NULL,
                        sampleRate,
                        paFramesPerBufferUnspecified,
                        paDitherOff,
@@ -221,159 +216,16 @@ int XPlay::run(unsigned delay)
 	
 }
 
-OutputChan::OutputChan() { }
-
-void FileReader(FileBuffer &fileBuffer)
-{
-    int *buf = fileBuffer.writeBuffer;
-
-    size_t bufSize = fileBuffer.getBufferSize();
-
-    printf("FileReader:: using buffer size %d\n", bufSize);
-
-    /* Fill up our first buffer */
-    /* TODO handle readcount < bufSize */
-    int readcount = sf_read_int(fileBuffer.infile, buf, bufSize);
-
-    /* Signal that we are ready to go! */
-    fileBuffer.signalFileReaderInitialized();
-
-    while (1)     
-    {
-        buf = fileBuffer.getWriteBuffer();
-        
-        /* Note, libsnd file will do the converestion for use e.g. from wav 16 */
-        int readcount = sf_read_int(fileBuffer.infile, buf, bufSize);
-
-        if(readcount == 0)
-        {
-            /* TODO handle EOF case */
-            printf("EOF");
-            while(1);
-        }
-    }
-}
-
-#define OUT_BLOCK_SIZE (1024*8)
-
-FileOutputChan::FileOutputChan(char *filename) : OutputChan() 
-{
-    fileBuffer = new FileBuffer(OUT_BLOCK_SIZE, filename);
-    fileThread = new std::thread(FileReader, std::ref(*this->fileBuffer) /* sampleRate, freq, chanId*/);
-
-    /* Note, this will wait until FileReader thread is ready to go.. */
-    buf = fileBuffer->getInitialReadBuffer();
-
-    this->bufSize = OUT_BLOCK_SIZE;
-    this->count= 0;
-    
-}
-
-/****** FileOutputChan ********/
-
-FileOutputChan::~FileOutputChan()
-{
-}
-
-int FileOutputChan::getNextSample(void) 
-{
-    if(this->count == 0)
-    {
-        int *old = buf;
-        buf = fileBuffer->swapFillBuffers();
-        count = this->bufSize;
-    }
-    
-    int sample = buf[bufSize-count];
-    count--;
-
-    return sample;
-}
-
-
-
-
-
-
-static unsigned gcd(unsigned u, unsigned v) 
-{
-    while ( v != 0) 
-    {
-        unsigned r = u % v;
-        u = v;
-        v = r;
-    }
-    return u;
-}
-
-SineOutputChan::SineOutputChan(unsigned sampleRate, unsigned freq) : OutputChan() 
-{
-    unsigned d = gcd(sampleRate, freq);
-    period = sampleRate/d * freq/d;
-    table = new int[period];
-    for (int i = 0; i < period; i++) 
-    {
-        float ratio = (double) sampleRate / (double) freq;
-        float ii = i;
-        float x = sinf(ii * 2 * M_PI / ratio);
-        x = x * ldexp(2,27);
-        table[i] = (int) x;
-    }
-    count = 0;
-    this->sampleRate = sampleRate;
-    this->freq = freq;
-    initialDelayCount = 48000;
-}
-
-int SineOutputChan::getNextSample(void) 
-{
-    if (initialDelayCount) 
-    {
-        initialDelayCount--;
-        return 0;
-    }
-  
-    int sample = table[count];
-    count++;
-    if (count >= period)
-    {
-        count = 0;
-    }
-  
-    return sample;
-}
-
-
-/* FileInputChan */
-
-FileInputChan::FileInputChan(char *filename) : InputChan() 
-{
-   // fileBuffer = new FileBuffer(OUT_BLOCK_SIZE, filename);
-    //fileThread = new std::thread(FileReader, std::ref(*this->fileBuffer) /* sampleRate, freq, chanId*/);
-
-    /* Note, this will wait until FileReader thread is ready to go.. */
-    //buf = fileBuffer->getInitialReadBuffer();
-
-    this->bufSize = OUT_BLOCK_SIZE;
-    //this->count= 0;
-    
-}
-
-FileInputChan::~FileInputChan()
-{
-}
-
-
 
 
 XPlay::XPlay(unsigned sampleRate, OutputChan *oc)
 {
 	this->sampleRate = sampleRate;
-	this->numOut = 2;	// TODO
-	this->numIn = 0; 	// TODO
+	this->devChanCountOut = 2;	// TODO
+	this->devChanCountIn = 0; 	// TODO
     this->outChans = oc;
 
-	log("Configured for %d in, %d out @ %d Hz\n", this->numIn, this->numOut, this->sampleRate);
+	log("Configured for %d in, %d out @ %d Hz\n", this->devChanCountIn, this->devChanCountOut, this->sampleRate);
 
 }
 
