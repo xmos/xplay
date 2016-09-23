@@ -45,3 +45,8 @@ xplay: | bin/
 all: portaudio libsndfile xplay
 	@echo "Build complete"
 
+clean:
+	rm -rf ./bin; rm -rf libs
+	cd ../../portaudio; make clean
+	cd ../../libsndfile; make clean
+
