@@ -6,7 +6,10 @@
 #include "logging.h"
 
 #include "portaudio.h"
+
+#if OS_DARWIN 
 #include "pa_mac_core.h"
+#endif
 
 unsigned XPlay::GetSampleRate()
 {

@@ -3,6 +3,7 @@
 
 #include "file.h"
 #include <iostream>
+#include <cstring>
 #include "logging.h"
 
 /* Gets called when buffer has been played via portaudio */
