@@ -105,8 +105,8 @@ int main(int argc, char *argv[])
     unsigned toneFreq = 0;              /* Freq of output tone */
     playmode_t playmode = PLAYMODE_SILENCE;
     recmode_t recmode = RECMODE_NONE;
-    OutputChan *oc;
-    //InputChan *ic;
+    OutputChan *oc = NULL;
+    InputChan *ic = NULL;
     const char * filename;
     const char * filename_rec;
 
@@ -152,14 +152,13 @@ int main(int argc, char *argv[])
     switch(recmode)
     {
         case RECMODE_FILE:
-        //    ic = new FileInputChan((char*) filename_rec, numChansIn);
+            ic = new FileInputChan((char*) filename_rec, numChansIn, sampleRate);
             break;
         default:
             break;
     }
  
-
-    XPlay xplay(sampleRate, oc /*, ic */);
+    XPlay xplay(sampleRate, oc, ic);
 
     /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
     int duration = 100000;  

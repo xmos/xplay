@@ -16,16 +16,6 @@ unsigned XPlay::GetSampleRate()
 	return this->sampleRate;
 }
 
-//unsigned XPlay::GetNumChansOut()
-//{
-//	return this->numOut;
-//}
-
-//unsigned XPlay::GetNumChansIn()
-//{
-//	return this->numIn;
-//}
-
 static int xplayCallback( const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,
                          const PaStreamCallbackTimeInfo* timeInfo,
@@ -53,27 +43,31 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
         report_error("Portaudio output overflow");
 
     //log("%d.",framesPerBuffer);
-  
-    for(int i = 0; i < framesPerBuffer; i++)
-    {
-        for (int j = 0; j < xplay->outChans->getChanCount(); j++) 
+ 
+    if(xplay->outChans != NULL)
+    { 
+        for(int i = 0; i < framesPerBuffer; i++)
         {
-            int sample = xplay->outChans->getNextSample();
-            *out++ = sample;
+            for (int j = 0; j < xplay->outChans->getChanCount(); j++) 
+            {
+                int sample = xplay->outChans->getNextSample();
+                *out++ = sample;
+            }
         }
     }
 
-#if 0
-    in = (int *) inputBuffer;
-
-    for(int i = 0; i < framesPerBuffer; i++)
+    if(xplay->inChans != NULL)
     {
-        for (int j = 0; j < numIn; j++) 
+        in = (int *) inputBuffer;
+
+        for(int i = 0; i < framesPerBuffer; i++)
         {
-            xplay->inChans[j]->consumeSample(*in++);
+            for (int j = 0; j < xplay->inChans->getChanCount(); j++) 
+            {
+                xplay->inChans->consumeSample(*in++);
+            }
         }
     }
-#endif
 
     return 0;
 }
@@ -148,10 +142,9 @@ int XPlay::run(unsigned delay)
 	inputParameters.suggestedLatency = 
 	Pa_GetDeviceInfo(inputParameters.device)->defaultHighInputLatency;
 #if OS_DARWIN 
-	//TODO
-	//PaMacCoreStreamInfo hostInfoIn;
-	//PaMacCore_SetupStreamInfo(&hostInfoIn, paMacCoreChangeDeviceParameters|paMacCoreFailIfConversionRequired);
-	//inputParameters.hostApiSpecificStreamInfo = &hostInfoIn; 
+	PaMacCoreStreamInfo hostInfoIn;
+	PaMacCore_SetupStreamInfo(&hostInfoIn, paMacCoreChangeDeviceParameters|paMacCoreFailIfConversionRequired);
+	inputParameters.hostApiSpecificStreamInfo = &hostInfoIn; 
 #endif
 	outputParameters.channelCount = devChanCountOut;
 	outputParameters.device = device;
@@ -221,12 +214,13 @@ int XPlay::run(unsigned delay)
 
 
 
-XPlay::XPlay(unsigned sampleRate, OutputChan *oc)
+XPlay::XPlay(unsigned sampleRate, OutputChan *oc, InputChan *ic)
 {
 	this->sampleRate = sampleRate;
 	this->devChanCountOut = 2;	// TODO
-	this->devChanCountIn = 0; 	// TODO
+	this->devChanCountIn = 2; 	// TODO
     this->outChans = oc;
+    this->inChans = ic;
 
 	log("Configured for %d in, %d out @ %d Hz\n", this->devChanCountIn, this->devChanCountOut, this->sampleRate);
 

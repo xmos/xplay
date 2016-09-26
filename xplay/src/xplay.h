@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include "file.h"
+#include "wrfile.h"
 #include "inputchan.h"
 #include "outputchan.h"
 
@@ -19,14 +20,14 @@ typedef enum recmode{RECMODE_NONE, RECMODE_FILE, RECMODE_SILENCE} recmode_t;
 class XPlay 
 {
 	public:
-  		XPlay(unsigned sampleRate, OutputChan *oc);
+  		XPlay(unsigned sampleRate, OutputChan *oc, InputChan *ic);
   		~XPlay();
   		int run(unsigned delay_ms);
   		unsigned GetSampleRate();
         unsigned GetNumChansOut(){return devChanCountOut;};
         unsigned GetNumChansIn(){return devChanCountIn;};
   		OutputChan* outChans;   // TODO Should be private
-  		InputChan* inChans;
+  		InputChan* inChans;     // TODO Should be private
 
 	private:
   		unsigned sampleRate;

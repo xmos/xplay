@@ -1,19 +1,20 @@
 
 /* xPlay: FileBuffer */
 
-#include "file.h"
+#include "wrfile.h"
 #include <iostream>
 #include <cstring>
 #include "logging.h"
 
 /* Gets called when buffer has been played via portaudio */
-int *FileBuffer::swapFillBuffers(void) 
+int *WrFileBuffer::swapFillBuffers(void) 
 {
     std::unique_lock<std::mutex> l(lock);
-    if (!writeFull) 
+
+    /* Check that buffer has been written to the file */
+    if (readFull) 
     {
-        /* Error, the file read is too slow */
-        std::cerr << "ERROR: host file read is too slow for output" << std::endl;
+        std::cerr << "ERROR: Host file write is too slow for intput" << std::endl;
     }
 
     /* Perform the buffer swap */ 
@@ -24,17 +25,17 @@ int *FileBuffer::swapFillBuffers(void)
     readFull = true;
     writeFull = false;
     cvDoSwap.notify_one();
-    return readBuffer;
+    return writeBuffer;
 }
 
-FileBuffer::~FileBuffer(void)
+WrFileBuffer::~WrFileBuffer(void)
 {
     delete writeBuffer;
     delete readBuffer;
-    sf_close (infile) ;
+    sf_close(outfile) ;
 }
 
-
+#if 0
 int *FileBuffer::getWriteBuffer(void)
 {   
     std::unique_lock<std::mutex> l(lock);
@@ -58,33 +59,38 @@ void FileBuffer::signalFileReaderInitialized(void)
   fileReaderInitialized = true;
   cvFileBufferInit.notify_one();
 }
+#endif
 
-FileBuffer::FileBuffer(size_t bufSize, char * filename)
+WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate)
 {
     writeBuffer = new int[bufSize];
     readBuffer = new int[bufSize];
     this->bufSize = bufSize;
-
     this->filename = filename;
-
     this->writeFull = false;
     this->readFull = false;
+    this->outfile = NULL;
 
-    infile = NULL;
-
+    printf("creating new WrFileBuffer");
     memset (&sfinfo, 0, sizeof (sfinfo)) ;
 
-    if ((infile = sf_open (filename, SFM_READ, &sfinfo)) == NULL)
+    /* Setup output file */
+    sfinfo.channels = chanCount;
+    sfinfo.samplerate = sampRate;
+
+    /* TODO ideally format is specified */
+    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+    if ((outfile = sf_open (filename, SFM_WRITE, &sfinfo)) == NULL)
     {  
-         log ("Unable to open input file %s.\n", filename) ;
+         log ("Unable to open output file %s.\n", filename) ;
          puts (sf_strerror (NULL)) ;
     };
 
-    log("# Reading from file %s.\n", filename) ;
+    log("# Writing to file %s.\n", filename) ;
     log("# Channels %d, Sample rate %d\n", sfinfo.channels, sfinfo.samplerate) ;
 
     this->filechannels = sfinfo.channels; 
 }
 
-
-size_t FileBuffer::getBufferSize(void) { return bufSize; }
+size_t WrFileBuffer::getBufferSize(void) { return bufSize; }

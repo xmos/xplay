@@ -2,6 +2,8 @@
 #ifndef __FILE_H__
 #define __FILE_H__
 
+/* TODO rename this rdfile.h */
+
 #include "stdio.h"
 #include "portaudio.h"
 #include "sndfile.h"
@@ -24,13 +26,13 @@ class FileBuffer
         int *readBuffer;
 
     private:
-        bool analyzerReady, fileReaderInitialized; 
+        bool fileReaderInitialized; 
         bool readFull, writeFull;
         size_t bufSize;
         char * filename;
         SF_INFO sfinfo;     // libsndfile
         int filechannels;
-        std::condition_variable cvDoSwap, cvAnalyzerInit; 
+        std::condition_variable cvDoSwap, cvFileBufferInit; 
         std::mutex lock;
 };
 
