@@ -34,8 +34,8 @@ The xplay source code uses C11 threads (uses features:  thread creation and mana
    * Download and install MSYS2 (msys2.github.io)
    * Open an MSYS2 command prompt (or the 32-bit or 64-bit command prompts if you plan on building 32-bit or 64-bit things)O from the start menu entries. 
    * Install make (pacman -S make)
-   * Install {32-bit,64-bit} MinGW-w64 GCC:
-      - pacman -S mingw-w64-{i686,x86_64}-gcc
+   * Install MinGW-w64 GCC e.g. :
+      - pacman -S mingw-w64-i686-gcc
    
 
 
