@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 
     if(options[SAMPLERATE])
     {
-        sampleRate = atoi(options[SAMPLERATE].arg);
+        sampleRate = std::atoi(options[SAMPLERATE].arg);
     }
     
     if(options[PLAYTONE])

@@ -26,6 +26,9 @@ ifeq ($(PLATFORM),DARWIN)
 EXTRA_CFLAGS = -stdlib=libc++ -DOS_DARWIN=1
 endif
 
+all: portaudio libsndfile xplay
+	@echo "Build complete"
+
 portaudio:
 	cd ../../portaudio; ./configure --prefix=$(abspath ../../xplay/xplay/libs/portaudio) $(PORTAUDIO_CONFIG_FLAGS)
 	cd ../../portaudio; make
@@ -40,10 +43,7 @@ bin/:
 	mkdir -p bin/
 
 xplay: | bin/
-	g++ -ffast-math -g -O3 -std=c++11 -pthread $(EXTRA_CFLAGS)  -Ilibs/portaudio/include -Llibs/portaudio/lib -Ilibs/libsndfile/include -Llibs/libsndfile/lib  src/*.cpp -lm -lportaudio $(EXTRA_LIBS) -lsndfile -o bin/xplay
-
-all: portaudio libsndfile xplay
-	@echo "Build complete"
+	g++ -ffast-math -g -O3 -std=c++11 $(EXTRA_CFLAGS)  -Ilibs/portaudio/include -Llibs/portaudio/lib -Ilibs/libsndfile/include -Llibs/libsndfile/lib  src/*.cpp -lm -lportaudio $(EXTRA_LIBS) -lsndfile -o bin/xplay
 
 clean:
 	rm -rf ./bin; rm -rf libs
