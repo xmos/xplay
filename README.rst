@@ -23,7 +23,7 @@ Dependancies
 Mac
 ~~~
  
-   * Install xcode command like tools
+   * Install xcode command line tools
    * In xplay/xplay run "make all"
    
 Windows
