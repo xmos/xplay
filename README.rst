@@ -1,7 +1,7 @@
 xPlay
 =====
 
-Simple audio playing/recording example application
+Simple audio playing/recording example application.
 
 Dependancies
 ------------
@@ -10,10 +10,10 @@ Dependancies
  * portaudio (http://www.portaudio.com)
  * ASIO SDK (http://www.steinberg.net/en/company/developers.html)
  
- Building
- --------
+Building
+--------
  
- A *simple* makefile is provided. It expects a sandbox with the following directory structure:
+A *simple* makefile is provided. It expects a sandbox with the following directory structure:
  
  - xplay (this repo)
  - portaudio (port audio source)
@@ -39,6 +39,6 @@ The xplay source code uses C11 threads (uses features:  thread creation and mana
    * Move into xplay/xplay and use the command
       - make all
    
-
+Note, if GCC isn't found, you probably are not running the  correct command prompt  for the tools you installed
 
 
