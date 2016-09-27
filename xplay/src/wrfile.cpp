@@ -7,14 +7,14 @@
 #include "logging.h"
 
 /* Gets called when buffer has been played via portaudio */
-int *WrFileBuffer::swapFillBuffers(void) 
+int *WrFileBuffer::swapWriteBuffers(void) 
 {
     std::unique_lock<std::mutex> l(lock);
 
     /* Check that buffer has been written to the file */
-    if (readFull) 
+    if(readFull) 
     {
-        std::cerr << "ERROR: Host file write is too slow for intput" << std::endl;
+        std::cerr << "ERROR: Host file write is too slow for input" << std::endl;
     }
 
     /* Perform the buffer swap */ 
@@ -22,8 +22,7 @@ int *WrFileBuffer::swapFillBuffers(void)
     tmp = writeBuffer;
     writeBuffer = readBuffer;
     readBuffer = tmp;
-    readFull = true;
-    writeFull = false;
+    writeFull = true;
     cvDoSwap.notify_one();
     return writeBuffer;
 }
@@ -32,34 +31,45 @@ WrFileBuffer::~WrFileBuffer(void)
 {
     delete writeBuffer;
     delete readBuffer;
+
+    /* Force OS into writing of all file cache buffers to disk */
+    sf_write_sync(outfile);
+
+    /* Close the write file */
     sf_close(outfile) ;
 }
 
-#if 0
-int *FileBuffer::getWriteBuffer(void)
+int *WrFileBuffer::getReadBuffer(void)
 {   
     std::unique_lock<std::mutex> l(lock);
-    writeFull = true;
-   
-    /* Wait until our write buffer has been taken */
-    cvDoSwap.wait(l, [this](){return (this->writeFull == false);});
-    return writeBuffer;
-}
+    
+    /* We have finished with current read buffer */
+    readFull = false;
+  
+    printf("waiting for writefull"); 
+    /* Wait until write buffer is filled */
+    cvDoSwap.wait(l, [this](){return (this->writeFull == true);});
 
-int *FileBuffer::getInitialReadBuffer(void)
-{
-    std::unique_lock<std::mutex> l(lock);
-    cvFileBufferInit.wait(l, [this](){return this->fileReaderInitialized;});
+    printf("got read buffer");
+    readFull = true;
+    writeFull = false;
+
     return readBuffer;
 }
 
-void FileBuffer::signalFileReaderInitialized(void)
+int *WrFileBuffer::getInitialWriteBuffer(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    cvFileWriterInit.wait(l, [this](){return this->fileWriterInitialized;});
+    return writeBuffer;
+}
+
+void WrFileBuffer::signalFileWriterInitialized(void)
 {
   std::unique_lock<std::mutex> l(lock);
-  fileReaderInitialized = true;
-  cvFileBufferInit.notify_one();
+  fileWriterInitialized = true;
+  cvFileWriterInit.notify_one();
 }
-#endif
 
 WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate)
 {

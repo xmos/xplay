@@ -25,6 +25,7 @@ class FileInputChan : public InputChan
         FileInputChan(char * filename, int chanCount, int sampRate);
         ~FileInputChan();
         void consumeSample(int sample);
+        unsigned GetBufSize(void) {return bufSize;};
 
     private:
         WrFileBuffer *wrFileBuffer;

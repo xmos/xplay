@@ -17,10 +17,13 @@ class WrFileBuffer
         WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate);
         ~WrFileBuffer(void);
         size_t getBufferSize();
-        int *swapFillBuffers(void);
+        int *getReadBuffer(void);
+        int *swapWriteBuffers(void);
         SNDFILE *outfile;            // TODO make private
         int *writeBuffer;            // "
         int *readBuffer;             // "
+        void signalFileWriterInitialized(void);
+        int *getInitialWriteBuffer(void);
 
     private:
         bool fileWriterInitialized; 

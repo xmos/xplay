@@ -11,36 +11,31 @@ void FileWriter(WrFileBuffer &wrFileBuffer)
 
     printf("FileWriter:: using buffer size %d\n", (int) bufSize);
 
-    while(1);
-        
-#if 0
-    /* Fill up our first buffer */
-    /* TODO handle readcount < bufSize */
-    int readcount = sf_read_int(fileBuffer.infile, buf, bufSize);
-
-    /* Signal that we are ready to go! */
-    fileBuffer.signalFileReaderInitialized();
+    wrFileBuffer.signalFileWriterInitialized();
 
     while (1)     
     {
-        buf = fileBuffer.getWriteBuffer();
+        buf = wrFileBuffer.getReadBuffer();
         
         /* Note, libsnd file will do the converestion for use e.g. from wav 16 */
-        int readcount = sf_read_int(fileBuffer.infile, buf, bufSize);
-
-        if(readcount == 0)
+        if (sf_write_int (wrFileBuffer.outfile, buf, bufSize) != bufSize)
         {
-            /* TODO handle EOF case */
-            printf("EOF");
-            while(1);
+            puts(sf_strerror (wrFileBuffer.outfile));
         }
     }
-#endif
+
+    /* Note, currently we only write out full buffers, we could write out a partial buffer on die */
 }
 
 void FileInputChan::consumeSample(int inputSample)
 {
-    printf("%d\n", inputSample);
+    this->buf[count] = inputSample;
+    this->count++;
+    if (this->count == this->bufSize) 
+    {
+        this->buf = wrFileBuffer->swapWriteBuffers();
+        this->count = 0;
+    }
 }
 
 InputChan::InputChan(int chanCount, int sampRate) 
@@ -55,7 +50,7 @@ FileInputChan::FileInputChan(char *filename, int chanCount, int sampleRate) : In
     wrFileThread = new std::thread(FileWriter, std::ref(*this->wrFileBuffer) /* sampleRate, freq, chanId*/);
 
     /* Note, this will wait until FileReader thread is ready to go.. */
-    //buf = fileBuffer->getInitialReadBuffer();
+    buf = wrFileBuffer->getInitialWriteBuffer();
 
     this->bufSize = OUT_BLOCK_SIZE;
     this->count= 0;
