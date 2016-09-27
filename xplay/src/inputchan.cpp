@@ -9,8 +9,6 @@ void FileWriter(WrFileBuffer &wrFileBuffer)
 
     size_t bufSize = wrFileBuffer.getBufferSize();
 
-    printf("FileWriter:: using buffer size %d\n", (int) bufSize);
-
     wrFileBuffer.signalFileWriterInitialized();
 
     while (1)     
