@@ -46,11 +46,10 @@ int *WrFileBuffer::getReadBuffer(void)
     /* We have finished with current read buffer */
     readFull = false;
   
-    printf("waiting for writefull"); 
     /* Wait until write buffer is filled */
     cvDoSwap.wait(l, [this](){return (this->writeFull == true);});
 
-    printf("got read buffer");
+    //printf("got read buffer");
     readFull = true;
     writeFull = false;
 
@@ -81,7 +80,6 @@ WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, 
     this->readFull = false;
     this->outfile = NULL;
 
-    printf("creating new WrFileBuffer");
     memset (&sfinfo, 0, sizeof (sfinfo)) ;
 
     /* Setup output file */
