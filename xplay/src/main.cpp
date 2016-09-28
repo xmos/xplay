@@ -50,25 +50,31 @@ struct Arg: public option::Arg
 };
 
 
-enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE};
+enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE};
 
 const option::Descriptor usage[] =
 {
  {UNKNOWN, 0, "", "",option::Arg::None, "USAGE: example [options]\n\n"
                                         "Options:" },
- {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit." },
- {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -o  \tPlay File." },
- {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -o  \tRecord File." },
- {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  -r <arg>, \t--required=<arg>  \tMust have an argument."  },
- {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  -r <arg>, \t--required=<arg>  \tMust have an argument."  },
+ {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit" },
+ {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevicesi, -l  \tPrint available audio devices and exit" },
+ {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -p <arg> \tPlay audio from file <arg>" },
+ {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -r <arg> \tRecord audio to file <arg>" },
+ {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  --samplerate, -s  <arg> \tSet Sample Rate to <arg>"  },
+ {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  --playtone, -t <arg> \tPlay tone of freq <arg>"  },
+ {DEVICE, 0,"d","device",Arg::Numeric, "  --device, -d <arg> \tUse device number <arg>"  },
  {UNKNOWN, 0, "", "",option::Arg::None, "\nExamples:\n"
-                               "  example --unknown -- --this_is_no_option\n"
-                               "  example -unk --plus -ppp file1 file2\n" },
+                               "  xplay --playtone 1000\n"
+                               "  xplay --playfile file.wav\n"
+                               "  xplay --playfile play.wav --recordfile record.wav\n"},
  {0,0,0,0,0,0}
 };
 
 int main(int argc, char *argv[]) 
 {
+    int useWDM = 0;
+    PaError err;
+
     argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
     option::Stats  stats(usage, argc, argv);
     std::vector<option::Option> options(stats.options_max);
@@ -109,6 +115,8 @@ int main(int argc, char *argv[])
     InputChan *ic = NULL;
     const char * filename;
     const char * filename_rec;
+    bool listDevices = false;
+    int targetDevice = -1;
 
     if(options[SAMPLERATE])
     {
@@ -132,8 +140,106 @@ int main(int argc, char *argv[])
         recmode = RECMODE_FILE;
         filename_rec = options[RECFILE].arg;
     }
-   
-    /* TODO we might want multple output modes for different channels, current file play is only one */
+ 
+    if(options[LISTDEVICES])
+    {
+        listDevices = true;
+    }
+
+    if(options[DEVICE])
+    {
+        targetDevice = atoi(options[DEVICE].arg);
+    }
+
+    err = Pa_Initialize();
+    
+    if( err != paNoError ) 
+    {
+        report_error("PortAudio error: %s\n", Pa_GetErrorText( err ) );
+        return 1;
+    }
+
+    /* Try and find an XMOS soundcard */
+    for (PaHostApiIndex i = 0; i < Pa_GetHostApiCount(); i++) 
+    {
+        const PaHostApiInfo *info = Pa_GetHostApiInfo(i);
+        log("Found Host API: %s\n", info->name);
+    }
+
+    int device = -1;
+    const PaDeviceInfo *DeviceInfo;
+    
+    if(targetDevice < 0)
+    {
+        /* Look for a device to use */
+        for (int i = 0; i < Pa_GetDeviceCount(); i++) 
+        {
+            int curDevChanCountIn = Pa_GetDeviceInfo(device)->maxInputChannels;
+
+            const char * name = Pa_GetDeviceInfo(i)->name;
+            log("Found Device %d: %s\n", i, name);
+
+            if(listDevices == false)
+            {
+                if (useWDM) 
+                {
+                    char wdmIn[] = "Line (XMOS";
+                    char wdmOut[] = "Speakers (XMOS";
+                    char *cmp = curDevChanCountIn == 0 ? wdmIn : wdmOut; 
+                    if (strstr(name, cmp) != NULL) 
+                    {
+                        log("Using Device %d: %s\n", i, name);
+                        device = i;
+                        break;
+                    }
+                }
+                else if (strncmp(name, "TUSBAudio", 9) == 0 || strncmp(name, "XMOS", 4) == 0 || strncmp(name, "xCORE", 5) == 0) 
+                {
+                    log("Using Device %d: %s\n", i, name);
+                    device = i;
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        /* Use specified device */
+        if(targetDevice < Pa_GetDeviceCount())
+        {
+            device = targetDevice;   
+            const char * name = Pa_GetDeviceInfo(device)->name;
+            log("Using Device %d: %s\n", device, name);
+        }
+        else
+        {
+            report_error("Specified device out of range\n");
+            return 1;
+        }
+    }
+      
+    if(listDevices)
+        return 0;
+
+    if(device == -1) 
+    {
+        log("Warning: Cannot find XMOS or Thesycon ASIO driver\n");
+        device = Pa_GetDefaultOutputDevice();
+        
+        const char * name = Pa_GetDeviceInfo(device)->name;
+        log("Using Default Device (%d: %s)\n", device, name);
+    }
+
+    /* By default set number of channels to the devices channel count */
+    numChansIn =  Pa_GetDeviceInfo(device)->maxInputChannels;
+    numChansOut =  Pa_GetDeviceInfo(device)->maxOutputChannels;
+
+    log("Device info: %d inputs, %d outputs @ %d Hz\n", numChansIn, numChansOut, sampleRate);
+
+    //FIXME
+    numChansIn = 2;
+    numChansOut = 2;
+
     switch(playmode)
     {
         case PLAYMODE_TONE:
@@ -152,15 +258,22 @@ int main(int argc, char *argv[])
     switch(recmode)
     {
         case RECMODE_FILE:
+            if(numChansIn == 0)
+            {
+                report_error("Cannot record from selected device (has no input channels?)");
+                return 1;
+            }
             ic = new FileInputChan((char*) filename_rec, numChansIn, sampleRate);
+            
             break;
+
         default:
             break;
     }
- 
+
     XPlay xplay(sampleRate, oc, ic);
 
     /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
     int duration = 100000;  
-    return xplay.run(duration);
+    return xplay.run(duration, device);
 }

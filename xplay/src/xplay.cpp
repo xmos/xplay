@@ -73,70 +73,17 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
 }
 
 
-
-
-int XPlay::run(unsigned delay)
+int XPlay::run(unsigned delay, int device)
 {
-    int useWDM = 0;
-
     PaError err;
-    err = Pa_Initialize();
-    if( err != paNoError ) 
-    {
-        report_error(  "PortAudio error: %s\n", Pa_GetErrorText( err ) );
-        return 1;
-    }
-
-    /* Try and find an XMOS soundcard */
-    for (PaHostApiIndex i = 0; i < Pa_GetHostApiCount(); i++) 
-    {
-        const PaHostApiInfo *info = Pa_GetHostApiInfo(i);
-        log("Found Host API: %s\n", info->name);
-    }
-
-    int device = -1;
-    const PaDeviceInfo *DeviceInfo;
-    for (int i = 0; i < Pa_GetDeviceCount(); i++) 
-    {
-        const char * name = Pa_GetDeviceInfo(i)->name;
-        log("Found Device %d: %s\n", i, name);
-
-        if (useWDM) 
-        {
-            char wdmIn[] = "Line (XMOS";
-            char wdmOut[] = "Speakers (XMOS";
-            char *cmp = devChanCountIn == 0 ? wdmIn : wdmOut; 
-            if (strstr(name, cmp) != NULL) 
-            {
-                log("Using Device %d: %s\n", i, name);
-                device = i;
-                break;
-            }
-        }
-        else if (strncmp(name, "TUSBAudio", 9) == 0 || strncmp(name, "XMOS", 4) == 0 || strncmp(name, "xCORE", 5) == 0) 
-        {
-            log("Using Device %d: %s\n", i, name);
-            device = i;
-            break;
-        }
-    }
-  
-    if( device == -1) 
-    {
-        log(  "Warning: Cannot find XMOS or Thesycon ASIO driver\n");
-        device = Pa_GetDefaultOutputDevice();
-        
-        const char * name = Pa_GetDeviceInfo(device)->name;
-        log("Using Default Device (%d: %s)\n", device, name);
-    }
-
+    
     PaStream *stream;
     PaStreamParameters outputParameters;
     PaStreamParameters inputParameters;
     memset(&inputParameters, 0, sizeof(inputParameters));
     memset(&outputParameters, 0, sizeof(outputParameters));
 
-    inputParameters.channelCount = devChanCountIn; // Should this be the chan count of device or file? 
+    inputParameters.channelCount = devChanCountIn;  
     inputParameters.device = device;
     inputParameters.sampleFormat = paInt32;
     inputParameters.suggestedLatency = 
@@ -212,18 +159,22 @@ int XPlay::run(unsigned delay)
     
 }
 
-
-
 XPlay::XPlay(unsigned sampleRate, OutputChan *oc, InputChan *ic)
 {
     this->sampleRate = sampleRate;
-    this->devChanCountOut = 2;  // TODO
-    this->devChanCountIn = 2;   // TODO
+   
+    /* Note, ideally we might have a "Do Nothing ic/oc rather than null.. */
+    if(oc != NULL)
+        this->devChanCountOut = oc->getChanCount(); 
+    else
+        this->devChanCountOut = 0; 
+    if(ic != NULL)
+        this->devChanCountIn = ic->getChanCount();   
+    else
+        this->devChanCountIn = 0;
+
     this->outChans = oc;
     this->inChans = ic;
-
-    log("Configured for %d in, %d out @ %d Hz\n", this->devChanCountIn, this->devChanCountOut, this->sampleRate);
-
 }
 
 XPlay::~XPlay()

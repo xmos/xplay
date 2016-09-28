@@ -10,8 +10,11 @@
 #include "wrfile.h"
 #include "inputchan.h"
 #include "outputchan.h"
+#include "logging.h"
 
-#define OUT_BLOCK_SIZE (1024*8)
+/* Note, this gets multiplied up by channel count */
+/* TODO Ideally should be based on latency (frames per buffer) */ 
+#define BUFFER_LENGTH (1024*4)
 
 typedef enum playmode{PLAYMODE_TONE, PLAYMODE_FILE, PLAYMODE_SILENCE} playmode_t;
 
@@ -22,7 +25,7 @@ class XPlay
 	public:
   		XPlay(unsigned sampleRate, OutputChan *oc, InputChan *ic);
   		~XPlay();
-  		int run(unsigned delay_ms);
+  		int run(unsigned delay_ms, int device);
   		unsigned GetSampleRate();
         unsigned GetNumChansOut(){return devChanCountOut;};
         unsigned GetNumChansIn(){return devChanCountIn;};
