@@ -14,8 +14,6 @@ void FileReader(FileBuffer &fileBuffer)
 
     size_t bufSize = fileBuffer.getBufferSize();
 
-    printf("FileReader:: using buffer size %d\n", (int) bufSize);
-
     /* Fill up our first buffer */
     /* TODO handle readcount < bufSize */
     int readcount = sf_read_int(fileBuffer.infile, buf, bufSize);
@@ -40,15 +38,16 @@ void FileReader(FileBuffer &fileBuffer)
 }
 
 
-FileOutputChan::FileOutputChan(char *filename, int x) : OutputChan(x) 
+FileOutputChan::FileOutputChan(char *filename, int chanCount) : OutputChan(chanCount) 
 {
-    fileBuffer = new FileBuffer(OUT_BLOCK_SIZE, filename);
+    int bufferSize = BUFFER_LENGTH * chanCount;
+    fileBuffer = new FileBuffer(bufferSize, filename);
     fileThread = new std::thread(FileReader, std::ref(*this->fileBuffer) /* sampleRate, freq, chanId*/);
 
     /* Note, this will wait until FileReader thread is ready to go.. */
     buf = fileBuffer->getInitialReadBuffer();
 
-    this->bufSize = OUT_BLOCK_SIZE;
+    this->bufSize = bufferSize;
     this->count= 0;
     
 }
@@ -57,6 +56,8 @@ FileOutputChan::FileOutputChan(char *filename, int x) : OutputChan(x)
 
 FileOutputChan::~FileOutputChan()
 {
+    delete fileBuffer;
+    delete fileThread;
 }
 
 int FileOutputChan::getNextSample(void) 

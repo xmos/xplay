@@ -44,17 +44,20 @@ InputChan::InputChan(int chanCount, int sampRate)
 
 FileInputChan::FileInputChan(char *filename, int chanCount, int sampleRate) : InputChan(chanCount, sampleRate) 
 {
-    wrFileBuffer = new WrFileBuffer(OUT_BLOCK_SIZE, filename, chanCount, sampleRate);
+    int bufferSize = BUFFER_LENGTH * chanCount;
+    wrFileBuffer = new WrFileBuffer(bufferSize, filename, chanCount, sampleRate);
     wrFileThread = new std::thread(FileWriter, std::ref(*this->wrFileBuffer) /* sampleRate, freq, chanId*/);
 
     /* Note, this will wait until FileReader thread is ready to go.. */
     buf = wrFileBuffer->getInitialWriteBuffer();
 
-    this->bufSize = OUT_BLOCK_SIZE;
+    this->bufSize = bufferSize;
     this->count= 0;
 }
 
 FileInputChan::~FileInputChan()
 {
+    delete wrFileBuffer;
+    delete wrFileThread;
 }
 
