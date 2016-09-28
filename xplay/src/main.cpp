@@ -236,10 +236,6 @@ int main(int argc, char *argv[])
 
     log("Device info: %d inputs, %d outputs @ %d Hz\n", numChansIn, numChansOut, sampleRate);
 
-    //FIXME
-    numChansIn = 2;
-    numChansOut = 2;
-
     switch(playmode)
     {
         case PLAYMODE_TONE:
