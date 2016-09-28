@@ -50,7 +50,7 @@ struct Arg: public option::Arg
 };
 
 
-enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE};
+enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT};
 
 const option::Descriptor usage[] =
 {
@@ -62,11 +62,13 @@ const option::Descriptor usage[] =
  {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -r <arg> \tRecord audio to file <arg>" },
  {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  --samplerate, -s  <arg> \tSet Sample Rate to <arg>"  },
  {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  --playtone, -t <arg> \tPlay tone of freq <arg>"  },
+ {RECCHANCOUNT, 0,"n","",Arg::Numeric, "  --recchancount, -n <arg> \tSets number of record channels to <arg>"  },
  {DEVICE, 0,"d","device",Arg::Numeric, "  --device, -d <arg> \tUse device number <arg>"  },
  {UNKNOWN, 0, "", "",option::Arg::None, "\nExamples:\n"
                                "  xplay --playtone 1000\n"
                                "  xplay --playfile file.wav\n"
-                               "  xplay --playfile play.wav --recordfile record.wav\n"},
+                               "  xplay --playfile play.wav --recordfile record.wav\n"
+                               "  xplay -r test.wav -d 2 -n 2\n"},
  {0,0,0,0,0,0}
 };
 
@@ -106,8 +108,8 @@ int main(int argc, char *argv[])
     }
 
     unsigned sampleRate= 44100;         /* Default freq */
-    unsigned numChansOut = 2;           /* TODO, options */
-    unsigned numChansIn = 2;            /* TODO, options */
+    unsigned numChansOut = 0;           
+    unsigned numChansIn = 0;            
     unsigned toneFreq = 0;              /* Freq of output tone */
     playmode_t playmode = PLAYMODE_SILENCE;
     recmode_t recmode = RECMODE_NONE;
@@ -117,6 +119,8 @@ int main(int argc, char *argv[])
     const char * filename_rec;
     bool listDevices = false;
     int targetDevice = -1;
+    int targetNumChansOut = -1;         /* User requested channel counts*/
+    int targetNumChansIn = -1;
 
     if(options[SAMPLERATE])
     {
@@ -149,6 +153,11 @@ int main(int argc, char *argv[])
     if(options[DEVICE])
     {
         targetDevice = atoi(options[DEVICE].arg);
+    }
+
+    if(options[RECCHANCOUNT])
+    {
+        targetNumChansIn = atoi(options[RECCHANCOUNT].arg);
     }
 
     err = Pa_Initialize();
@@ -230,9 +239,27 @@ int main(int argc, char *argv[])
         log("Using Default Device (%d: %s)\n", device, name);
     }
 
-    /* By default set number of channels to the devices channel count */
-    numChansIn =  Pa_GetDeviceInfo(device)->maxInputChannels;
+   
+    if(targetNumChansIn > 0)
+    {
+        if (targetNumChansIn < Pa_GetDeviceInfo(device)->maxInputChannels)
+        {
+            numChansIn = targetNumChansIn;
+        }
+        else
+        {
+            report_error("Invalid value for requested record channel count\n");
+            return 1;
+        }
+    }
+    else
+    {
+        /* By default set number of channels to the devices channel count */
+        numChansIn =  Pa_GetDeviceInfo(device)->maxInputChannels;
+    }
+    
     numChansOut =  Pa_GetDeviceInfo(device)->maxOutputChannels;
+    
 
     log("Device info: %d inputs, %d outputs @ %d Hz\n", numChansIn, numChansOut, sampleRate);
 
