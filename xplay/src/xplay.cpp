@@ -43,7 +43,17 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
         report_error("Portaudio output overflow");
 
     //log("%d.",framesPerBuffer);
- 
+    if(xplay->inChans != NULL)
+    {
+        for(int i = 0; i < framesPerBuffer; i++)
+        {
+            for (int j = 0; j < xplay->inChans->getChanCount(); j++) 
+            {
+                xplay->inChans->consumeSample(*in++);
+            }
+        }
+    }
+    
     if(xplay->outChans != NULL)
     { 
         for(int i = 0; i < framesPerBuffer; i++)
@@ -56,18 +66,19 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
         }
     }
 
-    if(xplay->inChans != NULL)
+    if(xplay->plugin != NULL)
     {
-        in = (int *) inputBuffer;
-
-        for(int i = 0; i < framesPerBuffer; i++)
-        {
-            for (int j = 0; j < xplay->inChans->getChanCount(); j++) 
-            {
-                xplay->inChans->consumeSample(*in++);
-            }
-        }
+        int *pluginBufOut = (int *) outputBuffer;
+        int *pluginBufIn = (int *) inputBuffer;
+        
+        xplay->plugin->HandleSampleBuffer(framesPerBuffer, pluginBufIn, pluginBufOut);
     }
+
+   
+
+
+    
+   
 
     return 0;
 }
@@ -103,6 +114,13 @@ int XPlay::run(unsigned delay, int device)
     PaMacCore_SetupStreamInfo(&hostInfoOut, paMacCoreChangeDeviceParameters|paMacCoreFailIfConversionRequired);
     outputParameters.hostApiSpecificStreamInfo = &hostInfoOut; 
 #endif
+
+    /* Run plugin intialisation (if we have one) */
+    if(this->plugin != NULL)
+    {
+        /* TODO inspect return */
+        this->plugin->Init();
+    }
 
    /* Open an audio I/O stream. */
    err = Pa_OpenStream( &stream,
@@ -159,10 +177,11 @@ int XPlay::run(unsigned delay, int device)
     
 }
 
-XPlay::XPlay(unsigned sampleRate, OutputChan *oc, InputChan *ic)
+XPlay::XPlay(unsigned sampleRate, OutputChan *oc, InputChan *ic, plugin_ *pi)
 {
     this->sampleRate = sampleRate;
-   
+    this->plugin = pi;  
+ 
     /* Note, ideally we might have a "Do Nothing ic/oc rather than null.. */
     if(oc != NULL)
         this->devChanCountOut = oc->getChanCount(); 

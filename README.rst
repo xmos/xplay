@@ -41,4 +41,15 @@ The xplay source code uses C11 threads (uses features:  thread creation and mana
    
 Note, if GCC isn't found, you probably are not running the  correct command prompt  for the tools you installed
 
+Plugins
+-------
 
+A *simple* plugin system is available to quickly add audio processing.
+
+A plugin should be compiled as follows:
+
+g++ -shared -o plugin.so plugin_source.cpp
+
+It can be passed to xplay using the --plugin option.
+
+See ./plugins for examples.

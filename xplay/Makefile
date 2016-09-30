@@ -19,7 +19,7 @@ endif
 ifeq ($(PLATFORM),WINDOWS)
 PORTAUDIO_CONFIG_FLAGS = --with-winapi=asio,wmme --with-asiodir=$(abspath ../../asiosdk)
 EXTRA_LIBS = -lwinmm -lole32
-EXTRA_CFLAGS = -static -static-libgcc
+EXTRA_CFLAGS = -static -static-libgcc -DOS_WIN32
 endif
 
 ifeq ($(PLATFORM),DARWIN)
@@ -43,7 +43,7 @@ bin/:
 	mkdir -p bin/
 
 xplay: | bin/
-	g++ -ffast-math -g -O3 -std=c++11 $(EXTRA_CFLAGS)  -Ilibs/portaudio/include -Llibs/portaudio/lib -Ilibs/libsndfile/include -Llibs/libsndfile/lib  src/*.cpp -lm -lportaudio $(EXTRA_LIBS) -lsndfile -o bin/xplay
+	g++ -ffast-math -g -O3 -std=c++11 $(EXTRA_CFLAGS)  -Ilibs/portaudio/include -Llibs/portaudio/lib -Ilibs/libsndfile/include -Llibs/libsndfile/lib  src/*.cpp -ldl -lm -lportaudio $(EXTRA_LIBS) -lsndfile -o bin/xplay
 
 clean:
 	rm -rf ./bin; rm -rf libs

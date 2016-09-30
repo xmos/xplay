@@ -49,8 +49,9 @@ struct Arg: public option::Arg
   }
 };
 
+//typedef int (*AddFnPtr)(int,int);
 
-enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT};
+enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT, PLUGIN};
 
 const option::Descriptor usage[] =
 {
@@ -59,6 +60,7 @@ const option::Descriptor usage[] =
  {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit" },
  {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevicesi, -l  \tPrint available audio devices and exit" },
  {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -p <arg> \tPlay audio from file <arg>" },
+ {PLUGIN, 0,"g","plugin",Arg::Required, "  --plugin, -p <arg> \tLoad plugin from file <arg>" },
  {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -r <arg> \tRecord audio to file <arg>" },
  {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  --samplerate, -s  <arg> \tSet Sample Rate to <arg>"  },
  {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  --playtone, -t <arg> \tPlay tone of freq <arg>"  },
@@ -72,10 +74,15 @@ const option::Descriptor usage[] =
  {0,0,0,0,0,0}
 };
 
+
 int main(int argc, char *argv[]) 
 {
     int useWDM = 0;
     PaError err;
+
+
+    //AddFnPtr AddFn;
+    void *hDLL;
 
     argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
     option::Stats  stats(usage, argc, argv);
@@ -121,6 +128,7 @@ int main(int argc, char *argv[])
     int targetDevice = -1;
     int targetNumChansOut = -1;         /* User requested channel counts*/
     int targetNumChansIn = -1;
+    plugin_ *pi = NULL;
 
     if(options[SAMPLERATE])
     {
@@ -160,6 +168,7 @@ int main(int argc, char *argv[])
         targetNumChansIn = atoi(options[RECCHANCOUNT].arg);
     }
 
+    
     err = Pa_Initialize();
     
     if( err != paNoError ) 
@@ -294,9 +303,54 @@ int main(int argc, char *argv[])
             break;
     }
 
-    XPlay xplay(sampleRate, oc, ic);
+    /* Setup our plug in (if we have one) */
+    if(options[PLUGIN])
+    {
+        /* Load plugin */
+        hDLL = LoadSharedLibrary((char *)options[PLUGIN].arg);
+        
+        if(hDLL == NULL)
+        {
+            report_error("Couldn't open plugin\n");
+            return 1;
+        }
+
+        /* Load create symbol */
+        create_t* create_plugin = (create_t*) GetFunction(hDLL, (char *)"create");
+        
+        if(create_plugin == NULL)
+        {
+            return 1;
+        }
+        
+        /* Create an instance of the plugin class */
+        pi = create_plugin();
+
+        /* Setup the plugin */
+        pi->SetSampleRate(sampleRate);
+        pi->SetNumChansOut(numChansOut);
+        pi->SetNumChansIn(numChansIn);
+    }
+
+    XPlay xplay(sampleRate, oc, ic, pi);
 
     /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
     int duration = 100000;  
-    return xplay.run(duration, device);
+    int returnVal = xplay.run(duration, device);
+
+    if(options[PLUGIN])
+    {
+        destroy_t* destroy_plugin = (destroy_t*) GetFunction(hDLL, (char *) "destroy");
+        
+        if(destroy_plugin == NULL)
+        {
+            return 1;
+        } 
+
+        destroy_plugin(pi);
+
+        FreeSharedLibrary(hDLL);     
+    }    
+
+    return returnVal;
 }
