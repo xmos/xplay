@@ -1,10 +1,11 @@
 
 TODO
 ====
- 
+
+ * Allow input/output buffers to be passed to plugin even if stream is not being used
  * Handle end of play file gracefully (i.e. exit)
- * Add plugin system
  * Add monitor function (this could be a simple plugin example)
+ * Make buffer sizes related to portaudio latency (frames per buffer)
  * Playback channel count handling 
  * Allow record and play to/from separate devices 
  * Add option to use first xmos device found 
@@ -17,3 +18,4 @@ Done
  * Sound device selection (use default if not specified) 
  * Add list sound devices options
  * Record channel count handling 
+ * Add (basic) plugin system
