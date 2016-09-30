@@ -45,6 +45,10 @@ bin/:
 xplay: | bin/
 	g++ -ffast-math -g -O3 -std=c++11 $(EXTRA_CFLAGS)  -Ilibs/portaudio/include -Llibs/portaudio/lib -Ilibs/libsndfile/include -Llibs/libsndfile/lib  src/*.cpp -ldl -lm -lportaudio $(EXTRA_LIBS) -lsndfile -o bin/xplay
 
+# Build the example plugins
+plugins:
+	cd ../plugins; g++ -shared -o monitor.so monitorplugin.cpp -I ../xplay/src
+
 clean:
 	rm -rf ./bin; rm -rf libs
 	cd ../../portaudio; make clean
