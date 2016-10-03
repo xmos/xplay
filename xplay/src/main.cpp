@@ -49,8 +49,6 @@ struct Arg: public option::Arg
   }
 };
 
-//typedef int (*AddFnPtr)(int,int);
-
 enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT, PLUGIN};
 
 const option::Descriptor usage[] =
@@ -64,13 +62,13 @@ const option::Descriptor usage[] =
  {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -r <arg> \tRecord audio to file <arg>" },
  {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  --samplerate, -s  <arg> \tSet Sample Rate to <arg>"  },
  {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  --playtone, -t <arg> \tPlay tone of freq <arg>"  },
- {RECCHANCOUNT, 0,"n","",Arg::Numeric, "  --recchancount, -n <arg> \tSets number of record channels to <arg>"  },
+ {RECCHANCOUNT, 0,"R","",Arg::Numeric, "  --recchancount, -R <arg> \tSets number of record channels to <arg>"  },
  {DEVICE, 0,"d","device",Arg::Numeric, "  --device, -d <arg> \tUse device number <arg>"  },
  {UNKNOWN, 0, "", "",option::Arg::None, "\nExamples:\n"
                                "  xplay --playtone 1000\n"
                                "  xplay --playfile file.wav\n"
                                "  xplay --playfile play.wav --recordfile record.wav\n"
-                               "  xplay -r test.wav -d 2 -n 2\n"},
+                               "  xplay -r test.wav -d 2 -R 2\n"},
  {0,0,0,0,0,0}
 };
 
