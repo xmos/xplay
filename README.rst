@@ -10,6 +10,8 @@ Dependancies
  * portaudio (http://www.portaudio.com)
  * ASIO SDK (http://www.steinberg.net/en/company/developers.html)
  
+Note that in order to build against newer OS X SDKs such as 10.11, you will probably need a development version of PortAudio. These are named "rc" and dated 2016 on PortAudio website, whereas the older stable releases dated 2014 only go up to OS X 10.9.
+
 Building
 --------
  
