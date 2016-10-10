@@ -25,6 +25,7 @@ class plugin : public plugin_
             if(GetNumChansIn() != GetNumChansOut())
             {
                 printf("Simple monitor plugin cannot handle case of different channel counts!\n");
+                return 1;
             }
             return 0;
         }
