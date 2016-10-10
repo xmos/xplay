@@ -1,5 +1,7 @@
+#include <iostream>
+#include <thread>
+#include <vector>
 #include "xplay.h"
-
 #include "math.h"
 
 
@@ -30,9 +32,8 @@ void FileReader(FileBuffer &fileBuffer)
 
         if(readcount == 0)
         {
-            /* TODO handle EOF case */
-            printf("EOF");
-            while(1);
+            /* TODO properly handle EOF case */
+            exit(0);
         }
     }
 }
