@@ -42,7 +42,6 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
     if (statusFlags & paOutputOverflow)
         report_error("Portaudio output overflow");
 
-    //log("%d.",framesPerBuffer);
     if(xplay->inChans != NULL)
     {
         for(int i = 0; i < framesPerBuffer; i++)
@@ -73,12 +72,6 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
         
         xplay->plugin->HandleSampleBuffer(framesPerBuffer, pluginBufIn, pluginBufOut);
     }
-
-   
-
-
-    
-   
 
     return 0;
 }
