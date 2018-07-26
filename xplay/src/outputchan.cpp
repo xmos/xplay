@@ -11,7 +11,7 @@ OutputChan::OutputChan(int x)
     this->done = false;
 }
 
-bool OutputChan::getDone(void)
+bool OutputChan::isDone(void)
 {
     return done;
 }
@@ -64,7 +64,7 @@ FileOutputChan::FileOutputChan(char *filename, int chanCount) : OutputChan(chanC
 FileOutputChan::~FileOutputChan()
 {
     delete fileBuffer;
-    delete fileThread;
+    //delete fileThread; // TODO
 }
 
 int FileOutputChan::getNextSample(void) 

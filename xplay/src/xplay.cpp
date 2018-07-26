@@ -46,7 +46,7 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
     {
         for(int i = 0; i < framesPerBuffer; i++)
         {
-            if (!xplay->inChans->getDone())
+            if (!xplay->inChans->isDone())
             {
                 for (int j = 0; j < xplay->inChans->getChanCount(); j++) 
                 {
@@ -60,7 +60,7 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
     { 
         for(int i = 0; i < framesPerBuffer; i++)
         {
-            if (xplay->outChans->getDone())
+            if (xplay->outChans->isDone())
             {
                 if (xplay->inChans != NULL)
                 {
@@ -89,12 +89,12 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
 
     if (xplay->inChans != NULL)
     {
-        if (xplay->inChans->getDone())
+        if (xplay->inChans->isDone())
             return paComplete;
     }
-    if (xplay->outChans != NULL)
+    else if (xplay->outChans != NULL)
     {
-        if (xplay->outChans->getDone())
+        if (xplay->outChans->isDone())
             return paComplete;
     }
     return paContinue;

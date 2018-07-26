@@ -49,7 +49,6 @@ int *WrFileBuffer::getReadBuffer(void)
     /* Wait until write buffer is filled */
     cvDoSwap.wait(l, [this](){return (this->writeFull == true);});
 
-    //printf("got read buffer");
     readFull = true;
     writeFull = false;
 
@@ -80,6 +79,9 @@ WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, 
     this->readFull = false;
     this->outfile = NULL;
 
+    this->stopping = false;
+    this->stopped = false;
+
     memset (&sfinfo, 0, sizeof (sfinfo)) ;
 
     /* Setup output file */
@@ -102,3 +104,27 @@ WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, 
 }
 
 size_t WrFileBuffer::getBufferSize(void) { return bufSize; }
+
+void WrFileBuffer::setStopping(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    stopping = true;
+}
+
+void WrFileBuffer::setStopped(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    stopped = true;
+}
+
+bool WrFileBuffer::isStopping(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    return stopping;
+}
+
+bool WrFileBuffer::isStopped(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    return stopped;
+}
