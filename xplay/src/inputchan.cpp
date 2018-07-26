@@ -40,6 +40,17 @@ InputChan::InputChan(int chanCount, int sampRate)
 { 
     this->chanCount = chanCount;
     this->sampRate = sampRate;
+    this->done = false;
+}
+
+bool InputChan::getDone(void)
+{
+    return done;
+}
+
+void FileInputChan::stop(void)
+{
+    // TODO
 }
 
 FileInputChan::FileInputChan(char *filename, int chanCount, int sampleRate) : InputChan(chanCount, sampleRate) 

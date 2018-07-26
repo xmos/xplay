@@ -15,9 +15,13 @@ class OutputChan
         virtual ~OutputChan() {};
         virtual int getNextSample(void) = 0;
         int getChanCount(){return chanCount;};
+        bool getDone(void);
 
     private:
         unsigned chanCount;
+
+    protected:
+        bool done;
 };
 
 

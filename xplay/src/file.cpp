@@ -12,6 +12,12 @@ int *FileBuffer::swapFillBuffers(void)
     std::unique_lock<std::mutex> l(lock);
     if (!writeFull) 
     {
+        if (fileReaderDone)
+        {
+            noMoreData = true;
+            return NULL;
+        }
+
         /* Error, the file read is too slow */
         std::cerr << "ERROR: host file read is too slow for output" << std::endl;
     }
@@ -59,6 +65,19 @@ void FileBuffer::signalFileReaderInitialized(void)
   cvFileBufferInit.notify_one();
 }
 
+bool FileBuffer::isNoMoreData(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    return noMoreData;
+}
+
+void FileBuffer::setFileReaderDone(void)
+{
+    std::unique_lock<std::mutex> l(lock);
+    writeFull = true;
+    fileReaderDone = true;
+}
+
 FileBuffer::FileBuffer(size_t bufSize, char * filename)
 {
     writeBuffer = new int[bufSize];
@@ -69,6 +88,10 @@ FileBuffer::FileBuffer(size_t bufSize, char * filename)
 
     this->writeFull = false;
     this->readFull = false;
+
+    this->fileReaderInitialized = false;
+    this->fileReaderDone = false;
+    this->noMoreData = false;
 
     infile = NULL;
 
