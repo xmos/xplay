@@ -55,7 +55,6 @@ bool FileInputChan::isDone(void)
 
 void FileInputChan::stop(void)
 {
-    printf("input chan stop\n");
     wrFileBuffer->setStopping();
 }
 
