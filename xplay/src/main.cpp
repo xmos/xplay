@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
         /* Look for a device to use */
         for (int i = 0; i < Pa_GetDeviceCount(); i++) 
         {
-            int curDevChanCountIn = Pa_GetDeviceInfo(device)->maxInputChannels;
+            int curDevChanCountIn = Pa_GetDeviceInfo(i)->maxInputChannels;
 
             const char * name = Pa_GetDeviceInfo(i)->name;
             log("Found Device %d: %s\n", i, name);
