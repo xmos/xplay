@@ -46,9 +46,12 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
     {
         for(int i = 0; i < framesPerBuffer; i++)
         {
-            for (int j = 0; j < xplay->inChans->getChanCount(); j++) 
+            if (!xplay->inChans->isDone())
             {
-                xplay->inChans->consumeSample(*in++);
+                for (int j = 0; j < xplay->inChans->getChanCount(); j++) 
+                {
+                    xplay->inChans->consumeSample(*in++);
+                }
             }
         }
     }
@@ -57,10 +60,21 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
     { 
         for(int i = 0; i < framesPerBuffer; i++)
         {
-            for (int j = 0; j < xplay->outChans->getChanCount(); j++) 
+            if (xplay->outChans->isDone())
             {
-                int sample = xplay->outChans->getNextSample();
-                *out++ = sample;
+                if (xplay->inChans != NULL)
+                {
+                    xplay->inChans->stop();
+                    break;
+                }
+            }
+            else
+            {
+                for (int j = 0; j < xplay->outChans->getChanCount(); j++) 
+                {
+                    int sample = xplay->outChans->getNextSample();
+                    *out++ = sample;
+                }
             }
         }
     }
@@ -73,7 +87,17 @@ static int xplayCallback( const void *inputBuffer, void *outputBuffer,
         xplay->plugin->HandleSampleBuffer(framesPerBuffer, pluginBufIn, pluginBufOut);
     }
 
-    return 0;
+    if (xplay->inChans != NULL)
+    {
+        if (xplay->inChans->isDone())
+            return paComplete;
+    }
+    else if (xplay->outChans != NULL)
+    {
+        if (xplay->outChans->isDone())
+            return paComplete;
+    }
+    return paContinue;
 }
 
 
@@ -138,10 +162,15 @@ int XPlay::run(unsigned delay, int device)
         return 1;
     }
 
-    if (delay == 0)
-        while (1);
-    else
-        Pa_Sleep(delay);
+    for (int i = 0; delay == 0 || i < delay; i++)
+    {
+        Pa_Sleep(1);
+        if ( !Pa_IsStreamActive( stream ) )
+              break;
+    }
+
+    if (delay > 0 && Pa_IsStreamActive( stream ) )
+        log("Timeout after %d msec\n", delay);
 
     err = Pa_StopStream( stream );
     if( err != paNoError ) 

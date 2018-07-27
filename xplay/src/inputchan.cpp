@@ -13,6 +13,12 @@ void FileWriter(WrFileBuffer &wrFileBuffer)
 
     while (1)     
     {
+        if (wrFileBuffer.isStopping())
+        {
+            wrFileBuffer.setStopped();
+            break;
+        }
+
         buf = wrFileBuffer.getReadBuffer();
         
         /* Note, libsnd file will do the converestion for use e.g. from wav 16 */
@@ -42,6 +48,16 @@ InputChan::InputChan(int chanCount, int sampRate)
     this->sampRate = sampRate;
 }
 
+bool FileInputChan::isDone(void)
+{
+    return wrFileBuffer->isStopped();
+}
+
+void FileInputChan::stop(void)
+{
+    wrFileBuffer->setStopping();
+}
+
 FileInputChan::FileInputChan(char *filename, int chanCount, int sampleRate) : InputChan(chanCount, sampleRate) 
 {
     int bufferSize = BUFFER_LENGTH * chanCount;
@@ -58,6 +74,6 @@ FileInputChan::FileInputChan(char *filename, int chanCount, int sampleRate) : In
 FileInputChan::~FileInputChan()
 {
     delete wrFileBuffer;
-    delete wrFileThread;
+    //delete wrFileThread;
 }
 

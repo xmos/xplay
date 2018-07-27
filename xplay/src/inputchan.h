@@ -12,6 +12,8 @@ class InputChan
         virtual void consumeSample(int sample) = 0;
         int getChanCount(){return chanCount;};
         int getSampRate(){return sampRate;};
+        virtual bool isDone(void) = 0;
+        virtual void stop(void) = 0;
     
     private:
         unsigned chanCount;
@@ -26,6 +28,8 @@ class FileInputChan : public InputChan
         ~FileInputChan();
         void consumeSample(int sample);
         unsigned GetBufSize(void) {return bufSize;};
+        bool isDone(void);
+        void stop(void);
 
     private:
         WrFileBuffer *wrFileBuffer;

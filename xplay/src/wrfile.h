@@ -19,6 +19,10 @@ class WrFileBuffer
         size_t getBufferSize();
         int *getReadBuffer(void);
         int *swapWriteBuffers(void);
+        void setStopping(void);
+        void setStopped(void);
+        bool isStopping(void);
+        bool isStopped(void);
         SNDFILE *outfile;            // TODO make private
         int *writeBuffer;            // "
         int *readBuffer;             // "
@@ -28,6 +32,7 @@ class WrFileBuffer
     private:
         bool fileWriterInitialized; 
         bool readFull, writeFull;
+        bool stopping, stopped;
         size_t bufSize;
         char * filename;
         SF_INFO sfinfo;     // libsndfile

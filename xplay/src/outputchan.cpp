@@ -8,6 +8,12 @@
 OutputChan::OutputChan(int x) 
 { 
     this->chanCount = x;
+    this->done = false;
+}
+
+bool OutputChan::isDone(void)
+{
+    return done;
 }
 
 void FileReader(FileBuffer &fileBuffer)
@@ -32,8 +38,8 @@ void FileReader(FileBuffer &fileBuffer)
 
         if(readcount == 0)
         {
-            /* TODO properly handle EOF case */
-            exit(0);
+            fileBuffer.setFileReaderDone();
+            break;
         }
     }
 }
@@ -58,7 +64,7 @@ FileOutputChan::FileOutputChan(char *filename, int chanCount) : OutputChan(chanC
 FileOutputChan::~FileOutputChan()
 {
     delete fileBuffer;
-    delete fileThread;
+    //delete fileThread; // TODO
 }
 
 int FileOutputChan::getNextSample(void) 
@@ -67,7 +73,15 @@ int FileOutputChan::getNextSample(void)
     {
         int *old = buf;
         buf = fileBuffer->swapFillBuffers();
-        count = this->bufSize;
+        if (fileBuffer->isNoMoreData())
+        {
+            done = true;
+            return 0;
+        }
+        else
+        {
+            count = this->bufSize;
+        }
     }
     
     int sample = buf[bufSize-count];

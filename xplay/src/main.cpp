@@ -350,5 +350,8 @@ int main(int argc, char *argv[])
         FreeSharedLibrary(hDLL);     
     }    
 
+    delete oc;
+    delete ic;
+
     return returnVal;
 }
