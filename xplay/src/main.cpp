@@ -332,8 +332,8 @@ int main(int argc, char *argv[])
 
     XPlay xplay(sampleRate, oc, ic, pi);
 
-    /* TODO duration should be while(1) (i.e. delay 0) by default or cmd line opt */
-    int duration = 100000;  
+    /* TODO Add a command line option to limit the audio play length to a specified duration. */
+    int duration = 0;  
     int returnVal = xplay.run(duration, device);
 
     if(options[PLUGIN])
