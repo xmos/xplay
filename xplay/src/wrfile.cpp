@@ -69,7 +69,7 @@ void WrFileBuffer::signalFileWriterInitialized(void)
   cvFileWriterInit.notify_one();
 }
 
-WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate)
+WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate, unsigned bitRes)
 {
     writeBuffer = new int[bufSize];
     readBuffer = new int[bufSize];
@@ -88,8 +88,7 @@ WrFileBuffer::WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, 
     sfinfo.channels = chanCount;
     sfinfo.samplerate = sampRate;
 
-    /* TODO ideally format is specified */
-    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+    sfinfo.format = SF_FORMAT_WAV | bitRes;
 
     if ((outfile = sf_open (filename, SFM_WRITE, &sfinfo)) == NULL)
     {  

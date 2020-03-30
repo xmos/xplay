@@ -24,7 +24,7 @@ class InputChan
 class FileInputChan : public InputChan 
 {
     public:
-        FileInputChan(char * filename, int chanCount, int sampRate);
+        FileInputChan(char * filename, unsigned chanCount, unsigned sampRate, unsigned bitRes);
         ~FileInputChan();
         void consumeSample(int sample);
         unsigned GetBufSize(void) {return bufSize;};
