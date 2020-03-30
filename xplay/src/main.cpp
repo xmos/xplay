@@ -58,17 +58,17 @@ const option::Descriptor usage[] =
  {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit" },
  {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevicesi, -l  \tPrint available audio devices and exit" },
  {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -p <arg> \tPlay audio from file <arg>" },
- {PLUGIN, 0,"g","plugin",Arg::Required, "  --plugin, -p <arg> \tLoad plugin from file <arg>" },
- {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -r <arg> \tRecord audio to file <arg>" },
- {SAMPLERATE, 0,"s","samplerate",Arg::Numeric, "  --samplerate, -s  <arg> \tSet Sample Rate to <arg>"  },
+ {PLUGIN, 0,"g","plugin",Arg::Required, "  --plugin, -g <arg> \tLoad plugin from file <arg>" },
+ {RECFILE, 0,"R","recordfile",Arg::Required, "  --recordfile, -R <arg> \tRecord audio to file <arg>" },
+ {SAMPLERATE, 0,"r","samplerate",Arg::Numeric, "  --samplerate, -r  <arg> \tSet Sample Rate to <arg>"  },
  {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  --playtone, -t <arg> \tPlay tone of freq <arg>"  },
- {RECCHANCOUNT, 0,"R","",Arg::Numeric, "  --recchancount, -R <arg> \tSets number of record channels to <arg>"  },
+ {RECCHANCOUNT, 0,"c","",Arg::Numeric, "  --recchancount, -c <arg> \tSets number of record channels to <arg>"  },
  {DEVICE, 0,"d","device",Arg::Numeric, "  --device, -d <arg> \tUse device number <arg>"  },
  {UNKNOWN, 0, "", "",option::Arg::None, "\nExamples:\n"
                                "  xplay --playtone 1000\n"
                                "  xplay --playfile file.wav\n"
                                "  xplay --playfile play.wav --recordfile record.wav\n"
-                               "  xplay -r test.wav -d 2 -R 2\n"},
+                               "  xplay -R test.wav -d 2 -c 2\n"},
  {0,0,0,0,0,0}
 };
 
