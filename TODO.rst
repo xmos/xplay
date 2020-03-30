@@ -9,7 +9,6 @@ TODO
  * Playback channel count handling 
  * Allow record and play to/from separate devices 
  * Add option to use first xmos device found 
- * Tidy up options/arguments
  * Add command line options for latency settings
  * Channel selection (when play/rec chan count < device chan count)
 
