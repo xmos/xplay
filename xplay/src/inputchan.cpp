@@ -58,10 +58,10 @@ void FileInputChan::stop(void)
     wrFileBuffer->setStopping();
 }
 
-FileInputChan::FileInputChan(char *filename, int chanCount, int sampleRate) : InputChan(chanCount, sampleRate) 
+FileInputChan::FileInputChan(char *filename, unsigned chanCount, unsigned sampleRate, unsigned bitRes) : InputChan(chanCount, sampleRate) 
 {
     int bufferSize = BUFFER_LENGTH * chanCount;
-    wrFileBuffer = new WrFileBuffer(bufferSize, filename, chanCount, sampleRate);
+    wrFileBuffer = new WrFileBuffer(bufferSize, filename, chanCount, sampleRate, bitRes);
     wrFileThread = new std::thread(FileWriter, std::ref(*this->wrFileBuffer) /* sampleRate, freq, chanId*/);
 
     /* Note, this will wait until FileReader thread is ready to go.. */

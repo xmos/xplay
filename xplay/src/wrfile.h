@@ -14,7 +14,7 @@
 class WrFileBuffer 
 {
     public:
-        WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate);
+        WrFileBuffer(size_t bufSize, char * filename, unsigned chanCount, unsigned sampRate, unsigned bitRes);
         ~WrFileBuffer(void);
         size_t getBufferSize();
         int *getReadBuffer(void);

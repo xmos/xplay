@@ -49,18 +49,19 @@ struct Arg: public option::Arg
   }
 };
 
-enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT, PLUGIN};
+enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, BITRESOLUTION, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT, PLUGIN};
 
 const option::Descriptor usage[] =
 {
  {UNKNOWN, 0, "", "",option::Arg::None, "USAGE: example [options]\n\n"
                                         "Options:" },
  {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit" },
- {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevicesi, -l  \tPrint available audio devices and exit" },
+ {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevices, -l  \tPrint available audio devices and exit" },
  {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -p <arg> \tPlay audio from file <arg>" },
  {PLUGIN, 0,"g","plugin",Arg::Required, "  --plugin, -g <arg> \tLoad plugin from file <arg>" },
  {RECFILE, 0,"R","recordfile",Arg::Required, "  --recordfile, -R <arg> \tRecord audio to file <arg>" },
- {SAMPLERATE, 0,"r","samplerate",Arg::Numeric, "  --samplerate, -r  <arg> \tSet Sample Rate to <arg>"  },
+ {SAMPLERATE, 0,"r","samplerate",Arg::Numeric, "  --samplerate, -r <arg> \tSet Sample Rate to <arg>"  },
+ {BITRESOLUTION, 0,"b","bitresolution",Arg::Numeric, "  --bitresolution, -b <arg> \tSet recording sample resolution <arg> bits"  },
  {PLAYTONE, 0,"t","playtone",Arg::Numeric, "  --playtone, -t <arg> \tPlay tone of freq <arg>"  },
  {RECCHANCOUNT, 0,"c","",Arg::Numeric, "  --recchancount, -c <arg> \tSets number of record channels to <arg>"  },
  {DEVICE, 0,"d","device",Arg::Numeric, "  --device, -d <arg> \tUse device number <arg>"  },
@@ -112,10 +113,11 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    unsigned sampleRate= 44100;         /* Default freq */
+    unsigned sampleRate = 44100;               /* Default freq */
+    unsigned bitResolution = SF_FORMAT_PCM_16; /* Default bit resolution */
     unsigned numChansOut = 0;           
     unsigned numChansIn = 0;            
-    unsigned toneFreq = 0;              /* Freq of output tone */
+    unsigned toneFreq = 0;                     /* Freq of output tone */
     playmode_t playmode = PLAYMODE_SILENCE;
     recmode_t recmode = RECMODE_NONE;
     OutputChan *oc = NULL;
@@ -124,13 +126,25 @@ int main(int argc, char *argv[])
     const char * filename_rec;
     bool listDevices = false;
     int targetDevice = -1;
-    int targetNumChansOut = -1;         /* User requested channel counts*/
+    int targetNumChansOut = -1;                /* User requested channel counts*/
     int targetNumChansIn = -1;
     plugin_ *pi = NULL;
 
     if(options[SAMPLERATE])
     {
         sampleRate = std::atoi(options[SAMPLERATE].arg);
+    }
+
+    if(options[BITRESOLUTION])
+    {
+        switch(std::atoi(options[BITRESOLUTION].arg)) {
+            case 16: bitResolution = SF_FORMAT_PCM_16; break;
+            case 24: bitResolution = SF_FORMAT_PCM_24; break;
+            case 32: bitResolution = SF_FORMAT_PCM_32; break;
+            default:
+                report_error("Unrecognised sample bit resolution \"%s\"\n", options[BITRESOLUTION].arg);
+                return 1;
+        }
     }
     
     if(options[PLAYTONE])
@@ -293,7 +307,7 @@ int main(int argc, char *argv[])
                 report_error("Cannot record from selected device (has no input channels?)");
                 return 1;
             }
-            ic = new FileInputChan((char*) filename_rec, numChansIn, sampleRate);
+            ic = new FileInputChan((char*) filename_rec, numChansIn, sampleRate, bitResolution);
             
             break;
 
