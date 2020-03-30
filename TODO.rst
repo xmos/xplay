@@ -1,4 +1,3 @@
-
 TODO
 ====
 
@@ -11,11 +10,3 @@ TODO
  * Add option to use first xmos device found 
  * Add command line options for latency settings
  * Channel selection (when play/rec chan count < device chan count)
-
-Done
-====
- * Sound device selection (use default if not specified) 
- * Add list sound devices options
- * Record channel count handling 
- * Add (basic) plugin system
- * Handle end of play file gracefully (i.e. exit)
