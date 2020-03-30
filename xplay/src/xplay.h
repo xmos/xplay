@@ -18,6 +18,9 @@
 /* TODO Ideally should be based on latency (frames per buffer) */ 
 #define BUFFER_LENGTH (1024*4)
 
+#define XPLAY_VERSION_MAJOR 1
+#define XPLAY_VERSION_MINOR 0
+
 typedef enum playmode{PLAYMODE_TONE, PLAYMODE_FILE, PLAYMODE_SILENCE} playmode_t;
 
 typedef enum recmode{RECMODE_NONE, RECMODE_FILE, RECMODE_SILENCE} recmode_t;

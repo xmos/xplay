@@ -49,14 +49,15 @@ struct Arg: public option::Arg
   }
 };
 
-enum  optionIndex { UNKNOWN, HELP, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT, PLUGIN};
+enum  optionIndex { UNKNOWN, HELP, VERSION, PLAYFILE, SAMPLERATE, PLAYTONE, RECFILE, LISTDEVICES, DEVICE, RECCHANCOUNT, PLUGIN};
 
 const option::Descriptor usage[] =
 {
  {UNKNOWN, 0, "", "",option::Arg::None, "USAGE: example [options]\n\n"
                                         "Options:" },
  {HELP, 0,"", "help",option::Arg::None, "  --help  \tPrint usage and exit" },
- {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevicesi, -l  \tPrint available audio devices and exit" },
+ {VERSION, 0,"v", "version",option::Arg::None, "  --version  \tPrint version" },
+ {LISTDEVICES, 0,"l", "listdevices",option::Arg::None, "  --listDevices, -l  \tPrint available audio devices and exit" },
  {PLAYFILE, 0,"p","playfile",Arg::Required, "  --playfile, -p <arg> \tPlay audio from file <arg>" },
  {PLUGIN, 0,"g","plugin",Arg::Required, "  --plugin, -p <arg> \tLoad plugin from file <arg>" },
  {RECFILE, 0,"r","recordfile",Arg::Required, "  --recordfile, -r <arg> \tRecord audio to file <arg>" },
@@ -94,6 +95,12 @@ int main(int argc, char *argv[])
     if (options[HELP] || argc == 0) 
     {
         option::printUsage(std::cout, usage);
+        return 0;
+    }
+
+    if (options[VERSION])
+    {
+        std::cout << "xplay version " << XPLAY_VERSION_MAJOR << "." << XPLAY_VERSION_MINOR << std::endl;
         return 0;
     }
 
