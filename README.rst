@@ -1,9 +1,6 @@
 xPlay
 =====
 
-xPlay
-=====
-
 Simple audio playing/recording example application.
 
 Usage: example [options]
