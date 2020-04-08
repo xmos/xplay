@@ -3,6 +3,28 @@ xPlay
 
 Simple audio playing/recording example application.
 
+USAGE: example [options]
+------------------------
+
+Options:
+--help Print usage and exit
+--version Print version
+--listDevices, -l Print available audio devices and exit
+--playfile, -p Play audio from file 
+--plugin, -g Load plugin from file 
+--recordfile, -R Record audio to file 
+--samplerate, -r Set Sample Rate to 
+--bitresolution, -b Set recording sample resolution bits
+--playtone, -t Play tone of freq 
+--recchancount, -c Sets number of record channels to 
+--device, -d Use device number
+
+Examples::
+ xplay --playtone 1000
+ xplay --playfile file.wav
+ xplay --playfile play.wav --recordfile record.wav
+ xplay -R test.wav -d 2 -c 2
+
 Dependancies
 ------------
 
