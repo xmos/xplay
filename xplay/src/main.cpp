@@ -204,17 +204,17 @@ int main(int argc, char *argv[])
     }
 
     int device = -1;
-    const PaDeviceInfo *DeviceInfo;
+    const PaDeviceInfo *info;
     
     if(targetDevice < 0)
     {
         /* Look for a device to use */
         for (int i = 0; i < Pa_GetDeviceCount(); i++) 
         {
-            int curDevChanCountIn = Pa_GetDeviceInfo(i)->maxInputChannels;
+            info = Pa_GetDeviceInfo(i);
 
             const char * name = Pa_GetDeviceInfo(i)->name;
-            log("Found Device %d: %s\n", i, name);
+            log("Found Device %d: %-40s %dHz %din/%dout\n", i, name, (int)info->defaultSampleRate, info->maxInputChannels, info->maxOutputChannels);
 
             if(listDevices == false)
             {
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
                 {
                     char wdmIn[] = "Line (XMOS";
                     char wdmOut[] = "Speakers (XMOS";
-                    char *cmp = curDevChanCountIn == 0 ? wdmIn : wdmOut; 
+                    char *cmp = info->maxInputChannels == 0 ? wdmIn : wdmOut;
                     if (strstr(name, cmp) != NULL) 
                     {
                         log("Using Device %d: %s\n", i, name);

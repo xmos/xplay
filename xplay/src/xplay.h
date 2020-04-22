@@ -19,7 +19,7 @@
 #define BUFFER_LENGTH (1024*4)
 
 #define XPLAY_VERSION_MAJOR 1
-#define XPLAY_VERSION_MINOR 1
+#define XPLAY_VERSION_MINOR 2
 
 typedef enum playmode{PLAYMODE_TONE, PLAYMODE_FILE, PLAYMODE_SILENCE} playmode_t;
 
